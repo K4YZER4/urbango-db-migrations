@@ -27,11 +27,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Flyway migrations
-        uses: joshuaavalon/flyway-action@v3
-        with:
-          url: jdbc:postgresql://localhost:5432/urbango
-          user: urbanuser
-          password: urbanpass
-          locations: filesystem:./db/migrations
-          schemas: urb,urb_sistema
+      - name: Wait for Postgres
+        run: |
+          for i in {1..20}; do
+            pg_isready -h localhost -p 5432 -U urbanuser -d urbango && exit 0
+            echo "Postgres not ready yet..."
+            sleep 3
+          done
+          echo "Postgres did not become ready in time"
+          exit 1
+
+      - name: Run Flyway migrations with Docker
+        run: |
+          docker run --rm \
+            --network host \
+            -v "$PWD/db/migrations":/flyway/sql:ro \
+            flyway/flyway:latest \
+            -url=jdbc:postgresql://localhost:5432/urbango \
+            -user=urbanuser \
+            -password=urbanpass \
+            -schemas=urb,urb_sistema \
+            migrate
