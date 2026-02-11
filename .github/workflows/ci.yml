@@ -1,0 +1,37 @@
+name: DB Migrations CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test-migrations:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: urbango
+          POSTGRES_USER: urbanuser
+          POSTGRES_PASSWORD: urbanpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U urbanuser -d urbango"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Flyway migrations
+        uses: joshuaavalon/flyway-action@v3
+        with:
+          url: jdbc:postgresql://localhost:5432/urbango
+          user: urbanuser
+          password: urbanpass
+          locations: filesystem:./db/migrations
+          schemas: urb,urb_sistema
