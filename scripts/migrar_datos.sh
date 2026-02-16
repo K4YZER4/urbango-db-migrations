@@ -18,19 +18,23 @@ if ! docker ps --format '{{.Names}}' | grep -q "^${DB_CONTAINER}$"; then
   exit 1
 fi
 
+# Armar lista ordenada por "versión" (V1, V2, ... V10)
+mapfile -t files < <(printf '%s\n' migrar_datos/*.sql | sort -V)
+
 echo ">> Copiando scripts de migrar_datos al contenedor..."
-for sql in migrar_datos/*.sql; do
+for sql in "${files[@]}"; do
   base="$(basename "$sql")"
   echo "   - $base"
   docker cp "$sql" "$DB_CONTAINER:/tmp/$base"
 done
 
 echo ">> Ejecutando scripts de migrar_datos dentro de la BD $DB_NAME..."
-for sql in migrar_datos/*.sql; do
+for sql in "${files[@]}"; do
   base="$(basename "$sql")"
   echo ">> Ejecutando $base ..."
   docker exec -i "$DB_CONTAINER" bash -c \
     "psql -U \"$DB_USER\" -d \"$DB_NAME\" -v ON_ERROR_STOP=1 -f \"/tmp/$base\""
 done
+
 
 echo ">> Migración de datos completada."
