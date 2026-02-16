@@ -1,0 +1,1 @@
+INSERT INTO urb.camion_ruta(id_camion,id_ruta) SELECT 1,id FROM urb.ruta;

@@ -1,0 +1,2 @@
+INSERT INTO urb.persona(nombre,apellido_paterno,apellido_materno,telefono,id_estado) 
+VALUES('UrbanGO','XXX','XXX',6871655703,1);
