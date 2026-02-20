@@ -16,10 +16,10 @@ BEGIN
         p.longitud, 
         p.orden, 
         r.nombre 
-    FROM urb.rutabaseposicion p
+    FROM urb.ruta_base_posicion p
     JOIN urb.ruta r
-        ON r.id = p.idruta
-    WHERE p.idruta = p_idruta
+        ON r.id = p.id_ruta
+    WHERE p.id_ruta = p_idruta
     ORDER BY p.orden ASC;
 END;
 $$;
